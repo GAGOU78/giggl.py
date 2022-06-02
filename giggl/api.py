@@ -37,14 +37,18 @@ class Giggl:
         self.s.headers.update({'User-agent': 'Mozilla/5.0 (X11; GNU/Linux) AppleWebKit/601.1 (KHTML, like Gecko) Tesla QtCarBrowser Safari/601.1'})
 
     def login(self, email=None, password=None, token=None):
+        global _token
         if email and password:
             payload = '{"email":"'+ email +'","password":"' + password +'"}'
             resp = self.s.post(f"{self.base_url}/auth", data=payload, headers={'Content-Type': 'application/json'}).json()
-            self.s.headers.update({'authorization': _token}) if resp['success'] == True else None
+            _token = resp['token'] if resp['success'] else None
+            self.s.headers.update({'authorization': _token})
             return resp
         if token:
             self.s.headers.update({'authorization': token})
-            return {"success": self.connections()['success']}
+            test = self.connections()['success']
+            _token = token
+            return {"success": test}
         else:
             return "you need a email, password or token to login"
 
@@ -61,10 +65,10 @@ class Giggl:
         resp = self.s.post(f"{self.base_url}/auth", data=payload, headers={'Content-Type': 'application/json'}).json()
         return resp['token']
 
-    def account_information(self, token):
+    def account_information(self):
         ws = websocket.create_connection("wss://orbit.giggl.app/ws")
         ws.recv()
-        ws.send('{"op":2,"data":{"token":"'+ token +'"}}')
+        ws.send('{"op":2,"data":{"token":"'+ _token +'"}}')
         result = ws.recv()
         jsonified = json.loads(result)
         ws.close()

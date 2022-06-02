@@ -59,4 +59,6 @@ print(giggl.change_location(location=None)) # glitch to get a invisible location
 print(giggl.change_website(website=None)) # glitch to get a invisible website
 
 giggl.add_friend(username="admin")
+
+print(giggl.account_information())
 ```
