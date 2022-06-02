@@ -19,13 +19,14 @@ function login(token) {
 login(token);
 ```
 
+install:
 
 ```
 pip install -U git+https://github.com/gagou78/giggl.py
 ```
 
 
-
+exemple:
 ```py
 from giggl import Giggl
 
