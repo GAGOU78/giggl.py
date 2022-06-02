@@ -14,9 +14,6 @@ class Email:
     def get_mail(self):
         return self.s.get('https://emailtemp.org/en/messages').json()['mailbox']
 
-    def get_cookie(self):
-        return self.s.cookies.get()
-
     def get_verif_code(self, logs: int=False):
         a = 0
         while True:
@@ -43,7 +40,7 @@ class Giggl:
         if email and password:
             payload = '{"email":"'+ email +'","password":"' + password +'"}'
             resp = self.s.post(f"{self.base_url}/auth", data=payload, headers={'Content-Type': 'application/json'}).json()
-            self.s.headers.update({'authorization': resp['token']}) if resp['success'] == True else None
+            self.s.headers.update({'authorization': _token}) if resp['success'] == True else None
             return resp
         if token:
             self.s.headers.update({'authorization': token})
@@ -65,14 +62,12 @@ class Giggl:
         return resp['token']
 
     def account_information(self, token):
-        from rich import print
         ws = websocket.create_connection("wss://orbit.giggl.app/ws")
         ws.recv()
         ws.send('{"op":2,"data":{"token":"'+ token +'"}}')
         result = ws.recv()
         jsonified = json.loads(result)
         ws.close()
-        print(jsonified)
         return jsonified
 
     def devices(self):
@@ -189,7 +184,7 @@ class Giggl:
             if register['success'] != True:
                 return register
             token = register['token']
-            print("token: ",token)
+            if logs:print("token: ",token)
             time.sleep(10)
             verif_link = m.get_verif_code(logs)
             verif_code = verif_link.split('https://canary.giggl.app/auth/verify-email/')[1].split('?code=')[1]
