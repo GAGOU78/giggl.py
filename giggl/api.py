@@ -77,6 +77,9 @@ class Giggl:
     def devices(self):
         return self.s.get(f"{self.base_url}/users/@me/devices").json()
 
+    def delete_device(self, device):
+        return self.s.delete(f"{self.base_url}/users/@me/devices/{device}")
+
     def connections(self):
         return self.s.get(f"{self.base_url}/users/@me/connections").json()
 
@@ -211,3 +214,6 @@ class Giggl:
 
     def proxy_verif(self):
         return self.s.get('https://eth0.me').content
+
+    def change_password(self, new_password, old_password):
+        self.s.patch(f'{self.base_url}/users/@me', json={"new_password": new_password, "old_password": old_password})
