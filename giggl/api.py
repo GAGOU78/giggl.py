@@ -78,7 +78,7 @@ class Giggl:
         return self.s.get(f"{self.base_url}/users/@me/devices").json()
 
     def delete_device(self, device):
-        return self.s.delete(f"{self.base_url}/users/@me/devices/{device}")
+        return self.s.delete(f"{self.base_url}/users/@me/devices/{device}").json()
 
     def connections(self):
         return self.s.get(f"{self.base_url}/users/@me/connections").json()
@@ -150,7 +150,10 @@ class Giggl:
             id = self.search_user(username)['data']['id']
         return self.s.post(f'{self.base_url}/users/@me/rooms', json={"recipients":[id]}).json()
 
-    def send_message(self, message, room_id):
+    def send_portal_message(self, message):
+        return self.s.post(f'{self.base_url}/portals/@this/message', json={"content": message}).json()
+
+    def send_private_message(self, message, room_id):
         return self.s.post(f'{self.base_url}/rooms/{room_id}/messages', json={"content": f"{message}"}).json()
 
     def edit_message(self, room_id, message_id, new_message):
@@ -159,7 +162,13 @@ class Giggl:
     def delete_message(self, room_id, message_id) -> None:
         return self.s.delete(f'{self.base_url}/rooms/{room_id}/messages/{message_id}').content
 
-    def create_portal(self, name, type): # type 1 = public, type 2 = private
+    def create_portal(self, name, type):
+        """create a portal
+
+        Args:
+            name (_type_): the name of the portal
+            type (_type_): type (1=public, 2=private)
+        """        
         payload = {
 	"name": name,
 	"region": "eu-west",
@@ -170,11 +179,14 @@ class Giggl:
 }
         return self.s.post(f'{self.base_url}/portals', json=payload).json()
 
+    def delete_portal(self):
+        return self.s.delete(f'{self.base_url}/portals/@mine').json()
+
     def create_invite(self, portal_id):
-        return self.s.post('https://gig.gl/invite', json={"portal_id": portal_id}).json()
+        return self.s.post('https://gig.gl/invite', json={"id": portal_id}).json()
 
     def portal_info(self, portal_id):
-        return self.s.get(f'{self.base_url}/portals/{portal_id}').json
+        return self.s.get(f'{self.base_url}/portals/{portal_id}').json()
 
     def close(self) -> None:
         return self.s.close()
@@ -217,3 +229,10 @@ class Giggl:
 
     def change_password(self, new_password, old_password):
         self.s.patch(f'{self.base_url}/users/@me', json={"new_password": new_password, "old_password": old_password})
+
+    def join_portal(self, portal_id: int):
+        portal_id = str(portal_id)
+        ws = websocket.create_connection("wss://orbit.giggl.app/ws")
+        ws.recv()
+        ws.send('{"op":2,"data":{"token":"'+ _token +'"}}')
+        ws.send('{"op":4,"data":{"id":"'+ portal_id +'"}}')
